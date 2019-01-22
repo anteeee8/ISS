@@ -1,101 +1,65 @@
-import tkinter
+from Tkinter import Button,Frame,Tk,Label,PhotoImage, Canvas
+from Tkinter import *
+import numpy as np
+import random
+from math import sin,cos,pi,ceil
 
-""" Heading Indicator Window"""
+class HeadingIndicator():
+    def __init__(self,root):
+        self.root=root
+        #load image to canvas
+        self.gauge=PhotoImage(file="gauge.png")
+        self.canvas=Canvas(self.root)
+        self.canvas.create_image(200,200,image=self.gauge)
+        self.canvas.pack(expand=YES, fill=BOTH)
+        self.canvas.config(width=self.gauge.width(), height=self.gauge.height())
+        #key bindings
+        self.root.bind('<Left>',self.moveLeft)
+        self.root.bind('<Right>',self.moveRight)
+        #indicator parameters
+        self.center=[200,200]
+        self.lineLength=180
+        self.lineWidth=4
+        self.indicator=[]
+        self.angle=0
+        self.angleReference=[random.randint(0,1) for i in range(1000)]
+        self.updateIndicator(self.angle)
+        self.angleReferenceGenerator()
+        self.root.mainloop()
 
-"""dolje je sat kojeg treba preradit da radi ono kaj zelimo"""
+    def updateIndicator(self,angle):
+        angle=angle*pi/180
+        point1=self.center-np.matrix([self.lineLength*sin(angle),self.lineLength*cos(angle)])
+        point2=point1+np.matrix([self.lineWidth*cos(angle),-self.lineWidth*sin(angle)])
+        point3=self.center+np.matrix([self.lineWidth*cos(angle),-self.lineWidth*sin(angle)])
+        edge1=[ceil(point1[0,0]),ceil(point1[0,1])]
+        edge2=[ceil(point2[0,0]),ceil(point2[0,1])]
+        edge3=[ceil(point3[0,0]),ceil(point3[0,1])]
+        self.indicator=self.canvas.create_polygon(self.center,edge1,edge2,edge3,fill='red')
 
-from turtle import *
-from datetime import datetime
+    def moveLeft(self,event):
+        self.angle=self.angle+2
+        self.canvas.delete(self.indicator)
+        self.updateIndicator(self.angle)
 
+    def moveRight(self,event):
+        self.angle=self.angle-2
+        self.canvas.delete(self.indicator)
+        self.updateIndicator(self.angle)
 
+    def angleReferenceGenerator(self):
+        if self.angleReference:
+            popped=self.angleReference.pop()
+            if popped==1:
+                self.angle=self.angle+5
+            else:
+                self.angle=self.angle-5
+            self.canvas.delete(self.indicator)
+            self.updateIndicator(self.angle)
+            self.root.after(100,self.angleReferenceGenerator)
 
-def moving(distance, angle=0):
-
-    penup()
-    right(angle)
-    forward(distance)
-    left(angle)
-    pendown()
-
-def layout(lenght, vast):
-    fd(lenght*1.15)
-    rt(90)
-    fd(vast/2.0)
-    lt(120)
-    fd(vast)
-    lt(120)
-    fd(vast)
-    lt(120)
-    fd(vast/2.0)
-
-def timer_hands(name, lenght, vast):
-    reset()
-    moving(-lenght*0.15)
-    begin_poly()
-    layout(lenght, vast)
-    end_poly()
-    clock_labellings = get_poly()
-    register_shape(name, clock_labellings)
-
-def clockface(radius):
-    reset()
-    pensize(7)
-    for i in range(60):
-        moving(radius)
-        if i % 5 == 0:
-            fd(25)
-            moving(-radius-25)
-        else:
-            dot(3)
-            moving(-radius)
-        rt(6)
-
-def settings():
-    global second_hand, minute_hand, hour_hand
-    timer_hands("second_hand", 125, 25)
-    timer_hands("minute_hand",  130, 25)
-    timer_hands("hour_hand", 90, 25)
-    clockface(160)
-    second_hand = Turtle()
-    second_hand.shape("second_hand")
-    second_hand.color("gray40", "black")
-    minute_hand = Turtle()
-    minute_hand.shape("minute_hand")
-    minute_hand.color("red", "orange")
-    hour_hand = Turtle()
-    hour_hand.shape("hour_hand")
-    hour_hand.color("red", "orange")
-    for hand in second_hand, minute_hand, hour_hand:
-        hand.resizemode("user")
-        hand.shapesize(1, 1, 3)
-        hand.speed(0)
-    ht()
-
-def tick():
-    t = datetime.today()
-    secondTimer = t.second + t.microsecond*0.000001
-    minute = t.minute + secondTimer/60.0
-    onTheHour = t.hour + minute/60.0
-    try:
-        tracer(False)
-        second_hand.setheading(6*secondTimer)
-        minute_hand.setheading(6*minute)
-        hour_hand.setheading(30*onTheHour)
-        tracer(True)
-        ontimer(tick, 100)
-    except Terminator:
-        pass
-
-def main():
-    tracer(False)
-    settings()
-    tracer(True)
-    tick()
-
-    return "Done"
 
 if __name__ == "__main__":
-    mode("logo")
-    msg = main()
-    print(msg)
-    mainloop()
+    pass
+    root=Tk()
+    heading=HeadingIndicator(root)
