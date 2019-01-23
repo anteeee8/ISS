@@ -1,5 +1,5 @@
-from Tkinter import Button,Frame,Tk,Label,PhotoImage, Canvas
-from Tkinter import *
+from tkinter import Button,Frame,Tk,Label,PhotoImage, Canvas
+from tkinter import *
 import numpy as np
 import random
 from math import sin,cos,pi,ceil
@@ -22,7 +22,7 @@ class HeadingIndicator():
         self.lineWidth=4
         self.indicator=[]
         self.angle=0
-        self.angleReference=[random.randint(0,1) for i in range(1000)]
+        self.angleReference=[random.randint(0,1) for i in range(100)]
         self.updateIndicator(self.angle)
         self.angleReferenceGenerator()
         self.root.mainloop()
@@ -48,17 +48,21 @@ class HeadingIndicator():
         self.updateIndicator(self.angle)
 
     def angleReferenceGenerator(self):
+        global total_angle_disp
         if self.angleReference:
             popped=self.angleReference.pop()
             if popped==1:
-                self.angle=self.angle+5
+                self.angle=self.angle+2
             else:
-                self.angle=self.angle-5
+                self.angle=self.angle-2
             self.canvas.delete(self.indicator)
             self.updateIndicator(self.angle)
             self.root.after(100,self.angleReferenceGenerator)
+            total_angle_disp+=abs(self.angle)
+            self.w = Message(text = f"Total angle displacement: {total_angle_disp:.0f}°", bg='white', fg='black', width=75)
+            self.w.place(relx=0.095, rely=0.06, anchor=CENTER)
 
-
+total_angle_disp=0  #total angle displacement
 if __name__ == "__main__":
     pass
     root=Tk()
